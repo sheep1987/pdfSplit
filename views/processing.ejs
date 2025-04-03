@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF 文件处理中</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>PDF 文件处理中</h1>
+  
+  <div class="processing-container">
+    <p>正在处理文件: <strong><%= originalFilename %></strong></p>
+    <p>总页数: <strong><%= pageCount %></strong></p>
+    
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    
+    <div class="progress-text" id="progressText">处理中: 0 / <%= pageCount %> 页 (0%)</div>
+    <div class="estimated-time" id="estimatedTime">预计剩余时间: 计算中...</div>
+    <div class="error-message" id="errorMessage"></div>
+  </div>
+  
+  <script>
+    const processId = '<%= processId %>';
+    const totalPages = <%= pageCount %>;
+    let startTime = Date.now();
+    let intervalId;
+    
+    // 更新进度条
+    function updateProgress() {
+      fetch(`/progress/${processId}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            showError('获取进度信息失败');
+            clearInterval(intervalId);
+            return;
+          }
+          
+          const progress = (data.current / data.total) * 100;
+          document.getElementById('progressBar').style.width = `${progress}%`;
+          document.getElementById('progressText').textContent = 
+            `处理中: ${data.current} / ${data.total} 页 (${Math.round(progress)}%)`;
+          
+          // 计算预计剩余时间
+          if (data.current > 0) {
+            const elapsedTime = Date.now() - startTime;
+            const timePerPage = elapsedTime / data.current;
+            const remainingPages = data.total - data.current;
+            const remainingTime = remainingPages * timePerPage;
+            
+            // 格式化剩余时间
+            let timeText = '预计剩余时间: ';
+            if (remainingTime < 1000) {
+              timeText += '不到1秒';
+            } else if (remainingTime < 60000) {
+              timeText += `${Math.round(remainingTime / 1000)} 秒`;
+            } else {
+              timeText += `${Math.round(remainingTime / 60000)} 分钟 ${Math.round((remainingTime % 60000) / 1000)} 秒`;
+            }
+            
+            document.getElementById('estimatedTime').textContent = timeText;
+          }
+          
+          // 检查处理状态
+          if (data.status === 'completed') {
+            clearInterval(intervalId);
+            document.getElementById('progressText').textContent = '处理完成!';
+            document.getElementById('estimatedTime').textContent = '正在跳转到结果页面...';
+            
+            // 跳转到结果页面
+            setTimeout(() => {
+              window.location.href = `/result/${processId}?originalFilename=<%= encodeURIComponent(originalFilename) %>`;
+            }, 1000);
+          } else if (data.status === 'error') {
+            showError(data.error || '处理过程中发生错误');
+            clearInterval(intervalId);
+          }
+        })
+        .catch(error => {
+          console.error('获取进度信息失败:', error);
+          showError('获取进度信息失败，请刷新页面重试');
+          clearInterval(intervalId);
+        });
+    }
+    
+    // 显示错误信息
+    function showError(message) {
+      const errorElement = document.getElementById('errorMessage');
+      errorElement.textContent = message;
+      errorElement.style.display = 'block';
+    }
+    
+    // 每秒更新一次进度
+    intervalId = setInterval(updateProgress, 1000);
+    
+    // 页面加载后立即更新一次
+    updateProgress();
+  </script>
+</body>
+</html> 

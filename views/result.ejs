@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF 分割结果</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>PDF 分割完成</h1>
+  <div class="summary">
+    <p>原文件: <strong><%= originalFilename %></strong></p>
+    <p>总共分割成 <strong><%= pageCount %></strong> 个文件</p>
+    <p><a href="/download-all/<%= folderName %>" class="btn btn-warning download-all-btn">下载所有文件 (ZIP)</a></p>
+  </div>
+  
+  <div class="files-grid">
+    <% files.forEach(function(file) { %>
+      <div class="file-card">
+        <svg class="file-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#E74C3C">
+          <path d="M0 0h24v24H0z" fill="none"/>
+          <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v1.25c0 .41-.34.75-.75.75s-.75-.34-.75-.75V8c0-.55.45-1 1-1H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2c-.28 0-.5-.22-.5-.5v-5c0-.28.22-.5.5-.5h2c.83 0 1.5.67 1.5 1.5v3zm4-3.75c0 .41-.34.75-.75.75H19v1h.75c.41 0 .75.34.75.75s-.34.75-.75.75H19v1h.75c.41 0 .75.34.75.75s-.34.75-.75.75H18c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1h2.25c.41 0 .75.34.75.75s-.34.75-.75.75H19v1h.75c.41 0 .75.34.75.75zM15 9.5h-1v1h1v-1zm0-1.5h-1v.5h1V8zm-6 0h-.5v3h.5c.28 0 .5-.22.5-.5v-2c0-.28-.22-.5-.5-.5z"/>
+        </svg>
+        <div class="file-name">第 <%= file.pageNumber %> 页</div>
+        <a href="<%= file.path %>" class="btn btn-primary download-btn" download>下载</a>
+      </div>
+    <% }); %>
+  </div>
+  
+  <a href="/" class="btn btn-secondary back-btn">返回首页</a>
+</body>
+</html> 
